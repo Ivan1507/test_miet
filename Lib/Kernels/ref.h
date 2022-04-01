@@ -46,6 +46,7 @@
         VX_ERROR_INVALID_PARAMETERS - в случае некорректных данных.
 */
 vx_status ref_Threshold(const vx_image src_image, vx_image dst_image, const vx_threshold thresh);
+vx_array ref_ConvexHull(const vx_array src_array);
 
 ///////////////////////////////////////////////////////////////////////////////
 
