@@ -13,6 +13,7 @@ Date: 28.03.22
 
 std::vector<vx_coordinates2d_t> FindHull(std::vector<vx_coordinates2d_t>& arr, const vx_coordinates2d_t L, const vx_coordinates2d_t R) {
 	const size_t sz = arr.size();
+	//std::cout <<"sz is "<< sz << "\n";
 	if (sz <= 0)
 		return arr;
 	double mxdist = -1e9;
@@ -23,24 +24,24 @@ std::vector<vx_coordinates2d_t> FindHull(std::vector<vx_coordinates2d_t>& arr, c
 
 	auto beg = arr.begin();
 	for (size_t i = 0; i < sz; ++i) {
-		auto it = beg + i;
-		double dist = (abs(diffy * (*it).x + diffx * (*it).y + R.x * L.y - L.x * R.y)) / znam;
+		vx_coordinates2d_t it = arr[i];
+		double dist = (abs(diffy * it.x + diffx *it.y + R.x * L.y - L.x * R.y)) / znam;
 		if (dist > mxdist) {
 			mxdist = dist;
-			H = *it;
+			H = it;
 		}
 	}
-	std::cout << H.x << " " << H.y << "\n";
 	std::vector<vx_coordinates2d_t> S1;//higher LH
 	std::vector<vx_coordinates2d_t> S2;//higher HR
 	for (size_t i = 0; i < sz; ++i) {
-		auto it = beg + i;
-		if ((((*it).x - L.x) * (H.y - L.y) - (H.x - L.x) * ((*it).y - L.y)) < 0)
-			S1.push_back(*it);
-		else if ((((*it).x - R.x) * (H.y - R.y) - (H.x - R.x) * ((*it).y - R.y)) < 0)
-			S2.push_back(*it);
+		vx_coordinates2d_t it = arr[i];
+		//std::cout << arr[i].x << " " << arr[i].y << '\n';
+		//std::cout << int((it.x - L.x) *(H.y - L.y) -(H.x - L.x) *(it.y - L.y)) << '\n';
+		if (int((it.x - L.x) * (H.y - L.y) - (H.x - L.x) * (it.y - L.y)) < 0)
+			S1.push_back(it);
+		else if (int((it.x - R.x) * (H.y - R.y) - (H.x - R.x) * (it.y - R.y)) <0)
+			S2.push_back(it);
 	}
-
 	std::vector<vx_coordinates2d_t> l1 = std::move(FindHull(S1, L, H));
 	std::vector<vx_coordinates2d_t> l2 = std::move(FindHull(S2, H, R));
 	l1.push_back(H);
@@ -60,26 +61,32 @@ extern "C" vx_array ref_ConvexHull(const vx_array src_array) {
 
 	for (uint32_t i = 1; i < len - 1; ++i) {
 		vx_coordinates2d_t current_cord = *(beg + i);
+	
 		if (((current_cord.x - L.x) * (R.y - L.y) - (R.x - L.x) * (current_cord.y - L.y)) < 0)
 			S1.push_back(current_cord);
 		else S2.push_back(current_cord);
 	}
 
-	std::cout << S1.size() << " " << S2.size();
+
 	std::vector<vx_coordinates2d_t> v1 = std::move(FindHull(S1, L, R));//Its just temporary object
 	std::vector<vx_coordinates2d_t> v2 = std::move(FindHull(S2, L, R));
 	v1.insert(v1.begin(), v2.begin(), v2.end());
-	
+
 	uint32_t sz1 = v1.size();
 	void* p = (void*)&(*v1.begin());
 	
-	std::cout << v1[0].x << " " << v1[0].y << "\n";
+	
 
-	_vx_array res[]{
+	_vx_array res[5]{
 		p,
 		sz1,
 		VX_TYPE_COORDINATES2D
 	};
+	vx_coordinates2d_t* beg1 = (vx_coordinates2d_t*)(res->data);
+	for (auto& v : v1) {
+		std::cout << v.x << " " << v.y << '\n';
+	}
 
 	return res;
+
 }
