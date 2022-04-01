@@ -55,13 +55,14 @@ void demo_ConvexHull::execute()
         p,
         7,
         VX_TYPE_COORDINATES2D
-    };
-    ref_ConvexHull(&src);
-    std::cout << "Convex Hull:\n";
+    }; std::cout << "Convex Hull:\n";
+    vx_array res=ref_ConvexHull(&src);
+    std::cout << res->size;
 
 
 
-    // cv::waitKey(0);
+
+    cv::waitKey(0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

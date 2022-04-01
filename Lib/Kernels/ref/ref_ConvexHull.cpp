@@ -8,6 +8,7 @@ Date: 28.03.22
 
 #include "../ref.h"
 #include <vector>
+#include <iostream>
 #include <math.h>
 
 std::vector<vx_coordinates2d_t> FindHull(std::vector<vx_coordinates2d_t>& arr, const vx_coordinates2d_t L, const vx_coordinates2d_t R) {
@@ -29,6 +30,7 @@ std::vector<vx_coordinates2d_t> FindHull(std::vector<vx_coordinates2d_t>& arr, c
 			H = *it;
 		}
 	}
+	std::cout << H.x << " " << H.y << "\n";
 	std::vector<vx_coordinates2d_t> S1;//higher LH
 	std::vector<vx_coordinates2d_t> S2;//higher HR
 	for (size_t i = 0; i < sz; ++i) {
@@ -47,7 +49,7 @@ std::vector<vx_coordinates2d_t> FindHull(std::vector<vx_coordinates2d_t>& arr, c
 
 }
 
-vx_array ref_ConvexHull(const vx_array src_array) {
+extern "C" vx_array ref_ConvexHull(const vx_array src_array) {
 	const uint32_t len = src_array->size;
 	if (len <= 2) return src_array;
 	vx_coordinates2d_t* beg = (vx_coordinates2d_t*)(src_array->data);
@@ -62,14 +64,16 @@ vx_array ref_ConvexHull(const vx_array src_array) {
 			S1.push_back(current_cord);
 		else S2.push_back(current_cord);
 	}
+
+	std::cout << S1.size() << " " << S2.size();
 	std::vector<vx_coordinates2d_t> v1 = std::move(FindHull(S1, L, R));//Its just temporary object
 	std::vector<vx_coordinates2d_t> v2 = std::move(FindHull(S2, L, R));
 	v1.insert(v1.begin(), v2.begin(), v2.end());
-
-
+	
 	uint32_t sz1 = v1.size();
 	void* p = (void*)&(*v1.begin());
-
+	
+	std::cout << v1[0].x << " " << v1[0].y << "\n";
 
 	_vx_array res[]{
 		p,

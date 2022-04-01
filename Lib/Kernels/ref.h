@@ -9,6 +9,7 @@
 #ifndef __REF_H__
 #define __REF_H__
 
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -46,7 +47,10 @@
         VX_ERROR_INVALID_PARAMETERS - в случае некорректных данных.
 */
 vx_status ref_Threshold(const vx_image src_image, vx_image dst_image, const vx_threshold thresh);
-vx_array ref_ConvexHull(const vx_array src_array);
+#ifdef __cplusplus
+extern "C" vx_array ref_ConvexHull(const vx_array src_array);
+#endif
+   
 
 ///////////////////////////////////////////////////////////////////////////////
 
