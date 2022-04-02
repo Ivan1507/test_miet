@@ -11,12 +11,30 @@ Date: 28.03.22
 #include <iostream>
 #include <math.h>
 
+template<typename Comparator = std::less<int>>
+bool point_pos(const vx_coordinates2d_t t, const vx_coordinates2d_t L, const vx_coordinates2d_t H, Comparator comp = Comparator{}) {
+	return comp(int((t.x - L.x) * (H.y - L.y) - (H.x - L.x) * (t.y - L.y)),0);
+}
 
-//template<typename T,typename=std::enable_if<std::is_same<T,U>>>
-//void FindCords(const std::vector<vx_coordinates2d_t>& arr, const vx_coordinates2d_t L, const vx_coordinates2d_t R,const vx_coordinates2d_t H, std::vector<vx_coordinates2d_t>& S1,//higher LH
-//std::vector<vx_coordinates2d_t>& S2) {
-//
-//}
+double dist_to_line(const double diffx, const double diffy, const vx_coordinates2d_t t, const vx_coordinates2d_t L, const vx_coordinates2d_t R) {
+	double znam = sqrt(diffy * diffy + diffx * diffx);
+	return (abs(diffy * t.x + diffx * t.y + R.x * L.y - L.x * R.y)) / znam;
+}
+
+
+void FindCords(const std::vector<vx_coordinates2d_t>& arr, const vx_coordinates2d_t L, const vx_coordinates2d_t R,const vx_coordinates2d_t H, std::vector<vx_coordinates2d_t>& S1,//higher LH
+	std::vector<vx_coordinates2d_t>& S2) {
+	size_t sz = arr.size();
+	for (size_t i = 0; i < sz; ++i) {
+		vx_coordinates2d_t it = arr[i];
+	
+		if (int((it.x - L.x) * (H.y - L.y) - (H.x - L.x) * (it.y - L.y)) > 0)
+				S1.push_back(it);
+			else if (int((it.x - R.x) * (H.y - R.y) - (H.x - R.x) * (it.y - R.y)) > 0)
+				S2.push_back(it);
+	
+	}
+}
 
 std::vector<vx_coordinates2d_t> FindHull(const std::vector<vx_coordinates2d_t>& arr, const vx_coordinates2d_t L, const vx_coordinates2d_t R,bool bot) {
 	const size_t sz = arr.size();
@@ -24,13 +42,13 @@ std::vector<vx_coordinates2d_t> FindHull(const std::vector<vx_coordinates2d_t>& 
 	if (sz <= 0)
 		return arr;
 	double mxdist = -1e9;
-	double diffy = (double)R.y - L.y;
-	double diffx = (double)R.x - L.x;
-	double znam = sqrt(diffy * diffy + diffx * diffx);
+	const double diffy = (double)R.y - L.y;
+	const double diffx = (double)R.x - L.x;
+
 	vx_coordinates2d_t H;//the most remote point from LR
 	for (size_t i = 0; i < sz; ++i) {
 		vx_coordinates2d_t it = arr[i];
-		double dist = (abs(diffy * it.x + diffx *it.y + R.x * L.y - L.x * R.y)) / znam;
+		double dist = dist_to_line(diffx,diffy,it,L,R);
 		if (dist > mxdist) {
 			mxdist = dist;
 			H = it;
@@ -70,17 +88,18 @@ extern "C" vx_array ref_ConvexHull(const vx_array src_array) {
 	const vx_coordinates2d_t R = *(beg + len - 1);
 	std::vector<vx_coordinates2d_t> S1;// points that higher than LR
 	std::vector<vx_coordinates2d_t> S2;//points that lower than LR
-	
+
+
+
 	for (uint32_t i = 1; i < len - 1; ++i) {
 		vx_coordinates2d_t current_cord = *(beg + i);
-		//std::cout << int((current_cord.x - L.x) * (R.y - L.y) - (R.x - L.x) * (current_cord.y - L.y)) << '\n';
-		if (int((current_cord.x - L.x) * (R.y - L.y) - (R.x - L.x) * (current_cord.y - L.y)) < 0)
+		if (point_pos(current_cord, L, R))
 			S1.push_back(current_cord);
 		else S2.push_back(current_cord);
 	}
 	std::cout << S1.size() << " " << S2.size() << '\n';
 	
-	std::vector<vx_coordinates2d_t> v1 = std::move(FindHull(S1, L, R,false));//Its just temporary object
+	std::vector<vx_coordinates2d_t> v1 = std::move(FindHull(S1, L, R,false));//Its temporary object
 	std::vector<vx_coordinates2d_t> v2 = std::move(FindHull(S2, L, R,true));
 	v1.insert(v1.begin(), v2.begin(), v2.end());
 	v1.push_back(L);
