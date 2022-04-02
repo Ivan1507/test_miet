@@ -45,26 +45,22 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 void demo_ConvexHull::execute()
 {
-    vx_coordinates2d_t vec[8]{ {1,2}, {3,5}, { 5,3 },{8,2},{6,0},{10,4}, {7,6}, {12,1} };
+    vx_coordinates2d_t vec[9]{ {1,2},{6,2}, {3,5}, { 5,3 }, {8,2}, {6,0}, {10,4}, {7,6}, {12,1} };
     std::cout << "All points:\n";
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 9; ++i) {
         std::cout << "("<<vec[i].x << ", " << vec[i].y <<")" << '\n';
     }
     void* p = (void*)(vec);
     _vx_array src{
         p,
-        8,
+        9,
         VX_TYPE_COORDINATES2D
     }; 
     std::cout << "Convex Hull:\n";
     _vx_array *res=ref_ConvexHull(&src);
    
     vx_coordinates2d_t* beg = (vx_coordinates2d_t*)(p);
-    size_t sz=res->size;
-    std::cout<<sz<<'\n';
-    for (int i = 0; i < sz; ++i) {
-        std::cout << "("<<(beg + i)->x << ", " << (beg + i)->y <<")"<< "\n";
-    }
+  
 
 
 
