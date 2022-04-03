@@ -1,6 +1,6 @@
 /*
 File:Convex Hull
-Поиск выпуклой оболочки
+Simple Convex Hull implementation
 Author: Razinkin Ivan
 Date: 28.03.22
 */
