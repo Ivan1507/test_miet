@@ -58,10 +58,12 @@ std::vector<vx2d_t> FindHull(const std::vector<vx2d_t>& arr, const vx2d_t& L, co
 	}
 	std::vector<vx2d_t> S1;//higher LH
 	std::vector<vx2d_t> S2;//higher HR
+	S1.reserve(sz);
+	S2.reserve(sz);
 	FindCords(arr,L,R,H,S1,S2);
 	std::vector<vx2d_t> l1 = std::move(FindHull(S1, L, H));
 	std::vector<vx2d_t> l2 = std::move(FindHull(S2, H, R));
-	l1.push_back(H);
+	l1.push_back(std::move(H));
 	l1.insert(l1.end(), l2.begin(), l2.end());
 	return l1;
 
@@ -75,19 +77,22 @@ extern "C" vx_array ref_ConvexHull(const vx_array src_array) {
 	const vx2d_t R = *(beg + len - 1);//the most right point
 	std::vector<vx2d_t> S1;// points that higher than LR
 	std::vector<vx2d_t> S2;//points that lower than LR
+	S1.reserve(len);
+	S2.reserve(len);
+
 
 	for (uint32_t i = 1; i < len - 1; ++i) {
 		vx2d_t current_cord = *(beg + i);
 		if (PointPos(current_cord, L, R))
-			S1.push_back(current_cord);
-		else S2.push_back(current_cord);
+			S1.push_back(std::move(current_cord));
+		else S2.push_back(std::move(current_cord));
 	}
 
 	std::vector<vx2d_t> v1 = std::move(FindHull(S1, L, R));//Its temporary object
 	std::vector<vx2d_t> v2 = std::move(FindHull(S2, L, R));
 	v1.insert(v1.begin(), v2.begin(), v2.end());
-	v1.push_back(L);
-	v1.push_back(R);
+	v1.push_back(std::move(L));
+	v1.push_back(std::move(R));
 
 	uint32_t sz1 = v1.size();
 	void* p = (void*)&(*v1.begin());
