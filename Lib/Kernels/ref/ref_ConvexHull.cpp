@@ -12,22 +12,22 @@ Date: 28.03.22
 #include <math.h>
 
 
-using vx2d_t=vx_coordinates2d_t;
+using vx2d_t=_vx_coordinates2d_t;
 
 
 
 template<typename Comparator = std::less<>>
-bool PointPos(const vx2d_t t, const vx2d_t L, const vx2d_t H, Comparator comp = Comparator{}) {
+bool PointPos(const vx2d_t& t, const vx2d_t& L, const vx2d_t& H, Comparator comp = Comparator{}) {
 	return comp(int((t.x - L.x) * (H.y - L.y) - (H.x - L.x) * (t.y - L.y)),0);
 }
 
-double DistoLine(const double diffx, const double diffy, const vx2d_t t, const vx2d_t L, const vx2d_t R) {
+double DistoLine(const double diffx, const double diffy, const vx2d_t& t, const vx2d_t& L, const vx2d_t& R) {
 	double znam = sqrt(diffy * diffy + diffx * diffx);
 	return (abs(diffy * t.x + diffx * t.y + R.x * L.y - L.x * R.y)) / znam;
 }
 
 
-void FindCords(const std::vector<vx2d_t>& arr, const vx2d_t L, const vx2d_t R,const vx2d_t H, std::vector<vx2d_t>& S1,//higher LH
+void FindCords(const std::vector<vx2d_t>& arr, const vx2d_t& L, const vx2d_t& R,const vx2d_t& H, std::vector<vx2d_t>& S1,
 	std::vector<vx2d_t>& S2) {
 	size_t sz = arr.size();
 	for (size_t i = 0; i < sz; ++i) {
@@ -40,7 +40,7 @@ void FindCords(const std::vector<vx2d_t>& arr, const vx2d_t L, const vx2d_t R,co
 	}
 }
 
-std::vector<vx2d_t> FindHull(const std::vector<vx2d_t>& arr, const vx2d_t L, const vx2d_t R) {
+std::vector<vx2d_t> FindHull(const std::vector<vx2d_t>& arr, const vx2d_t& L, const vx2d_t& R) {
 	const size_t sz = arr.size();
 	if (sz <= 0)
 		return arr;
@@ -100,8 +100,8 @@ extern "C" vx_array ref_ConvexHull(const vx_array src_array) {
 
 	vx2d_t* beg1 = (vx2d_t*)(res->data);
 	std::cout<<"Number points: "<<v1.size()<<'\n';
-	for (auto&& v : v1) {
-		std::cout << "("<<v.x << ", " << v.y << ")\n";
+	for (size_t i = 0; i < sz1;++i) {
+		std::cout << "("<<(beg1+i)->x << ", " << (beg1+i)->y << ")\n";
 	}
 
 	return res;
