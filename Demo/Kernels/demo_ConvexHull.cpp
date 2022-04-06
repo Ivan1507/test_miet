@@ -111,7 +111,7 @@ void demo_ConvexHull::applyParameters(int, void* data)
     ///@{ OPENCV
     {
         cv::Mat canny_output;
-        cv::Canny(demo->src_grey, canny_output, thresh, thresh * 2);
+        cv::Canny(demo->m_srcImage, canny_output, thresh, thresh * 2);
         std::vector<std::vector<_vx_coordinates2d_t>> contours;
 
         findContours(canny_output, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
