@@ -48,7 +48,7 @@
 */
 vx_status ref_Threshold(const vx_image src_image, vx_image dst_image, const vx_threshold thresh);
 #ifdef __cplusplus
-extern "C" vx_array ref_ConvexHull(const vx_array src_array);
+extern "C" void ref_ConvexHull(const vx_array src_array,void *p,size_t& rsz);
 #endif
    
 

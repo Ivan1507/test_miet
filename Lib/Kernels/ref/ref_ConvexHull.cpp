@@ -69,12 +69,22 @@ std::vector<vx2d_t> FindHull(const std::vector<vx2d_t>& arr, const vx2d_t& L, co
 
 }
 
-extern "C" vx_array ref_ConvexHull(const vx_array src_array) {
+extern "C" void ref_ConvexHull(const vx_array src_array,void *p,size_t& rsz) {
 	const uint32_t len = src_array->size;
-	if (len <= 2) return src_array;
+	if (len <= 2) return;
 	vx2d_t* beg = (vx2d_t*)(src_array->data);
-	const vx2d_t L = *beg;//the most left point
-	const vx2d_t R = *(beg + len - 1);//the most right point
+	vx2d_t L{1e6,0};//the most left point
+	vx2d_t R{0,0};//the most right point
+	for (uint32_t i = 0; i < len; ++i) {
+		if ((beg + i)->x < L.x) {
+			L=*(beg+i);
+		}
+		if ((beg + i)->x > R.x) {
+			R = *(beg + i);
+		}
+	}
+	std::cout << "L: "<<L.x << " " << L.y << "\n";
+	std::cout << "R: " << R.x << " " << R.y << "\n";
 	std::vector<vx2d_t> S1;// points that higher than LR
 	std::vector<vx2d_t> S2;//points that lower than LR
 	S1.reserve(len);
@@ -91,24 +101,20 @@ extern "C" vx_array ref_ConvexHull(const vx_array src_array) {
 	std::vector<vx2d_t> v1 = std::move(FindHull(S1, L, R));//Its temporary object
 	std::vector<vx2d_t> v2 = std::move(FindHull(S2, L, R));
 	v1.insert(v1.begin(), v2.begin(), v2.end());
-	v1.push_back(std::move(L));
-	v1.push_back(std::move(R));
+	/*v1.push_back(std::move(L));
+	v1.push_back(std::move(R));*/
 
 	uint32_t sz1 = v1.size();
-	void* p = (void*)&(*v1.begin());
 
-	_vx_array res[]{
-		p,
-		sz1,
-		VX_TYPE_COORDINATES2D
-	};
+	memcpy((vx2d_t*)p, &( * v1.begin()), sz1*sizeof(vx2d_t));
+	
+	rsz = sz1;
+	/*vx2d_t* beg2= (vx2d_t*)(res->data);
+	for (int i = 0; i <res->size; ++i) {
+		std::cout << (beg2+i)->x << " " << (beg2+i)->y << '\n';
+	}*/
+	
 
-	vx2d_t* beg1 = (vx2d_t*)(res->data);
-	std::cout<<"Number points: "<<v1.size()<<'\n';
-	for (size_t i = 0; i < sz1;++i) {
-		std::cout << "("<<(beg1+i)->x << ", " << (beg1+i)->y << ")\n";
-	}
 
-	return res;
 
 }
