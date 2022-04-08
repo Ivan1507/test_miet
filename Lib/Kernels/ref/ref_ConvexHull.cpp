@@ -23,7 +23,7 @@ bool PointPos(const vx2d_t& t, const vx2d_t& L, const vx2d_t& H, Comparator comp
 
 double DistoLine(const double diffx, const double diffy, const vx2d_t& t, const vx2d_t& L, const vx2d_t& R) {
 	double znam = sqrt(diffy * diffy + diffx * diffx);
-	return (abs(diffy * t.x + diffx * t.y + R.x * L.y - L.x * R.y)) / znam;
+	return (abs(diffy * t.x - diffx * t.y + R.x * L.y - L.x * R.y)) / znam;
 }
 
 
@@ -32,7 +32,7 @@ void FindCords(const std::vector<vx2d_t>& arr, const vx2d_t& L, const vx2d_t& R,
 	size_t sz = arr.size();
 	for (size_t i = 0; i < sz; ++i) {
 		if (PointPos(arr[i], L, H))
-				S1.push_back(arr[i]);
+			S1.push_back(arr[i]);
 		else if (PointPos(arr[i], H, R))
 			S2.push_back(arr[i]);
 		
@@ -50,7 +50,7 @@ std::vector<vx2d_t> FindHull(const std::vector<vx2d_t>& arr, const vx2d_t& L, co
 
 	vx2d_t H;//the most remote point from LR
 	for (size_t i = 0; i < sz; ++i) {
-		double dist = DistoLine(diffx,diffy,arr[i], L, R);
+		double dist = DistoLine(diffx,diffy,arr[i], L,R);
 		if (dist > mxdist) {
 			mxdist = dist;
 			H = arr[i];
@@ -69,9 +69,9 @@ std::vector<vx2d_t> FindHull(const std::vector<vx2d_t>& arr, const vx2d_t& L, co
 
 }
 
-extern "C" void ref_ConvexHull(const vx_array src_array,void *p,size_t& rsz) {
+extern "C" vx_array ref_ConvexHull(const vx_array src_array,void *p) {
 	const uint32_t len = src_array->size;
-	if (len <= 2) return;
+	if (len <= 2) return src_array;
 	vx2d_t* beg = (vx2d_t*)(src_array->data);
 	vx2d_t L{1e6,0};//the most left point
 	vx2d_t R{0,0};//the most right point
@@ -83,38 +83,33 @@ extern "C" void ref_ConvexHull(const vx_array src_array,void *p,size_t& rsz) {
 			R = *(beg + i);
 		}
 	}
-	std::cout << "L: "<<L.x << " " << L.y << "\n";
-	std::cout << "R: " << R.x << " " << R.y << "\n";
 	std::vector<vx2d_t> S1;// points that higher than LR
 	std::vector<vx2d_t> S2;//points that lower than LR
 	S1.reserve(len);
 	S2.reserve(len);
 
-
-	for (uint32_t i = 1; i < len - 1; ++i) {
+	
+	for (uint32_t i = 0; i < len; ++i) {
 		vx2d_t current_cord = *(beg + i);
 		if (PointPos(current_cord, L, R))
 			S1.push_back(std::move(current_cord));
-		else S2.push_back(std::move(current_cord));
+		else 
+			S2.push_back(std::move(current_cord));
 	}
 
 	std::vector<vx2d_t> v1 = std::move(FindHull(S1, L, R));//Its temporary object
 	std::vector<vx2d_t> v2 = std::move(FindHull(S2, L, R));
 	v1.insert(v1.begin(), v2.begin(), v2.end());
-	/*v1.push_back(std::move(L));
-	v1.push_back(std::move(R));*/
 
 	uint32_t sz1 = v1.size();
 
 	memcpy((vx2d_t*)p, &( * v1.begin()), sz1*sizeof(vx2d_t));
 	
-	rsz = sz1;
-	/*vx2d_t* beg2= (vx2d_t*)(res->data);
-	for (int i = 0; i <res->size; ++i) {
-		std::cout << (beg2+i)->x << " " << (beg2+i)->y << '\n';
-	}*/
-	
+	_vx_array res[]{
+		p,
+		sz1,
+		VX_TYPE_COORDINATES2D
+	};
 
-
-
+	return res;
 }

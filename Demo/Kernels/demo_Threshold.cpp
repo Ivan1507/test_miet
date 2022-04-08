@@ -62,7 +62,7 @@ void demo_Threshold::execute()
    cv::namedWindow(m_openCVWindow, CV_WINDOW_NORMAL);
    cv::namedWindow(m_diffWindow, CV_WINDOW_NORMAL);
 
-   const std::string imgPath = "../Image/Solvay_conference_1927.png";
+   const std::string imgPath = "C:\\dev\\test_miet\\Image\\apple.png";
    m_srcImage = cv::imread(imgPath, CV_LOAD_IMAGE_GRAYSCALE);
    cv::imshow(m_originalWindow, m_srcImage);
 
@@ -81,6 +81,7 @@ void demo_Threshold::applyParameters(int, void* data)
 
    ///@{ OPENCV
    cv::Mat cvImage;
+    
    cv::threshold(demo->m_srcImage, cvImage, demo->m_threshold, 255, CV_THRESH_BINARY);
    cv::imshow(m_openCVWindow, cvImage);
    ///@}

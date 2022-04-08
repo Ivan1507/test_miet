@@ -26,7 +26,9 @@ class demo_ConvexHull : public IDemoCase
 public:
     ///@brief default ctor
 
+    demo_ConvexHull() :m_threshold(100) {
 
+    }
     ///@see IDemoCase::ReplyName
     virtual std::string ReplyName() const override
     {
@@ -44,7 +46,6 @@ private:
 private:
     int m_threshold;
     cv::Mat m_srcImage;
-    cv::Mat src_grey;
 
 };
 
@@ -64,28 +65,18 @@ namespace
 
 void demo_ConvexHull::execute()
 {
-   /* vx_coordinates2d_t vec[11]{ {1,2},{6,1}, {3,5}, { 5,3 }, {8,2},{6,3} ,{10,4},{5,3},{9,3},{7,6}, {12,1} };
-    std::cout << "All points:\n";
-    for (int i = 0; i < 11; ++i) {
-        std::cout << "("<<vec[i].x << ", " << vec[i].y <<")" << '\n';
-    }*/
- 
-  
+   
     cv::namedWindow(m_originalWindow, CV_WINDOW_NORMAL);
-   /* cv::namedWindow(m_openVXWindow, CV_WINDOW_NORMAL);
+    cv::namedWindow(m_openVXWindow, CV_WINDOW_NORMAL);
     cv::namedWindow(m_openCVWindow, CV_WINDOW_NORMAL);
-    cv::namedWindow(m_diffWindow, CV_WINDOW_NORMAL);*/
-
-
+    cv::namedWindow(m_diffWindow, CV_WINDOW_NORMAL);
 
     const std::string imgPath = "C:\\dev\\test_miet\\Image\\apple.png";
     m_srcImage = cv::imread(imgPath, CV_LOAD_IMAGE_GRAYSCALE);
     cv::imshow(m_originalWindow, m_srcImage);
    
-  
 
     cv::createTrackbar("ConvexHull:", m_originalWindow, &m_threshold, 255, applyParameters, static_cast<void*>(this));
-
 
     applyParameters(m_threshold,this);
 
@@ -96,25 +87,24 @@ void demo_ConvexHull::applyParameters(int, void* data)
 {
     auto demo = static_cast<demo_ConvexHull*>(data);
     const cv::Size imgSize(demo->m_srcImage.cols, demo->m_srcImage.rows);
-    int thresh = 100;
+
     cv::RNG rng(12345);
     ///@{ OPENCV
  
     cv::Mat canny_output;
-    cv::Canny(demo->m_srcImage, canny_output, thresh, thresh * 2);
+    cv::Canny(demo->m_srcImage, canny_output, demo->m_threshold, demo->m_threshold * 2);
     std::vector<std::vector<cv::Point>> contours;
 
    findContours(canny_output, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
   
    std::vector<std::vector<cv::Point>>hull (contours.size());
-   std::cout<<contours.size()<<'\n';
    for (size_t i = 0; i < contours.size(); ++i)
    {
         cv::convexHull(contours[i], hull[i]);
    }
-   for (int i = 0; i < hull[0].size(); ++i) {
-       std::cout << hull[0][i].x << " " << hull[0][i].y << '\n';
-   }
+   /*std::cout << "opencv hull size: "<<hull[0].size() << '\n';
+   for (auto&& v : hull[0])
+       std::cout << v.x << " " << v.y << '\n';*/
    cv::Mat drawing = cv::Mat::zeros(canny_output.size(), CV_8UC3);//result of openCv Convex Hull
    for (size_t i = 0; i < contours.size(); ++i)
    {
@@ -122,53 +112,51 @@ void demo_ConvexHull::applyParameters(int, void* data)
        drawContours(drawing, contours, (int)i, color);
        drawContours(drawing, hull, (int)i, color);
    }
-   imshow("opencv", drawing);
+   imshow(m_openCVWindow, drawing);
    
 
 
-   //openvx
-   void* p = (void*)&(contours[0][0]);
-   size_t sz = contours[0].size();
-   _vx_array src{
-       p,
-       sz,
-       VX_TYPE_COORDINATES2D
-   };
-   void* p1 = new char[sz * sizeof(vx_coordinates2d_t)];
-   size_t res_sz;
-    ref_ConvexHull(&src,p1,res_sz);
-    _vx_array res{
-        p1,
-        res_sz,
-        VX_TYPE_COORDINATES2D
-    };
-    std::cout << '\n' << res_sz << '\n';
-   cv::Point* beg = (cv::Point*)(src.data);
-   cv::Point* beg_res = (cv::Point*)(res.data);
-   std::cout << beg_res->x << " " << beg_res->y << "\n";
-   for (int i = 0; i < res.size; ++i) {
-       std::cout << (beg_res+i)->x << " " << (beg_res+i)->y << "\n";
-   }
-   std::vector<cv::Point> mycontours(beg, beg + sz);
-   std::vector<cv::Point> myhull(beg_res,beg_res+res_sz);
-   for (int i = 0; i < myhull.size(); ++i) {
-       std::cout << myhull[i].x << " " << myhull[i].y << "\n";
-   }
-  /* for (size_t i = 0; i < src.size; ++i) {
-       std::cout << (beg + i)->x << " " << (beg + i)->y << '\n';
-   }*/
+   ///@{ OPENVX
+   cv::Mat my_canny;
+   cv::Canny(demo->m_srcImage, my_canny, demo->m_threshold, demo->m_threshold * 2);
+   std::vector<std::vector<cv::Point>> my_contours;
 
-   cv::Mat openvX = cv::Mat::zeros(canny_output.size(), CV_8UC3);//result of openCv Convex Hull
-   for (size_t i = 0; i < mycontours.size(); ++i)
-   {
+   findContours(my_canny, my_contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
-       cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
-       drawContours(openvX, mycontours, (int)i, color);
-       drawContours(openvX, myhull, (int)i, color);
+   std::vector<std::vector<cv::Point>> myhull(my_contours.size());
+   for (size_t i = 0; i < contours.size(); ++i) {
+       void* p = (void*)&(contours[i][0]);
+       size_t sz = contours[i].size();
+       void* p1 = new char[sz * sizeof(vx_coordinates2d_t)];
+       _vx_array src{
+           p,
+           sz,
+           VX_TYPE_COORDINATES2D
+       };
+       vx_array res = ref_ConvexHull(&src,p1);
+       cv::Point* beg = (cv::Point*)(res->data);
+       std::vector<cv::Point> res_vec(beg, beg + res->size);
+       myhull[i]=res_vec;
+       delete[] p1;
    }
-   imshow("opencv", openvX);
+  /* std::cout << "myhuul size: " << myhull[0].size() << '\n';
+   for (auto&& v : myhull[0])
+       std::cout << v.x << " " << v.y << "\n";*/
+
   
 
+   cv::Mat openvX = cv::Mat::zeros(my_canny.size(), CV_8UC3);//result of my Convex Hull
+   for (size_t i = 0; i < my_contours.size(); ++i)
+   {
+       cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+       drawContours(openvX, my_contours, (int)i, color);
+       drawContours(openvX, myhull, (int)i, color);
+   }
+   imshow(m_openVXWindow, openvX);
+  
+    cv::Mat diffImage(imgSize, CV_8UC1);
+    cv::absdiff(openvX,drawing, diffImage);
+    cv::imshow(m_diffWindow, diffImage);
 
    
 }
