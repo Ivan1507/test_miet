@@ -2,6 +2,8 @@
 # Тестовое задание
 
 Реализован алгоритм поиска выпуклой оболочки
+![image](https://user-images.githubusercontent.com/52796964/162397668-0b23cc1b-5a5a-4bec-a3d2-787fa6f0e50d.png)
+
 
 # Библиотека OpenVX Ext
 
