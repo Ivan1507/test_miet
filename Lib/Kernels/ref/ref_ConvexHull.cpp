@@ -103,7 +103,7 @@ extern "C" vx_array ref_ConvexHull(const vx_array src_array,void *p) {
 
 	uint32_t sz1 = v1.size();
 
-	memcpy((vx2d_t*)p, &( * v1.begin()), sz1*sizeof(vx2d_t));
+	memcpy((vx2d_t*)p, &(v1[0]), sz1 * sizeof(vx2d_t));
 	
 	_vx_array res[]{
 		p,

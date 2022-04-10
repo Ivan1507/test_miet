@@ -97,7 +97,7 @@ void demo_ConvexHull::applyParameters(int, void* data)
 
    findContours(canny_output, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
   
-   std::vector<std::vector<cv::Point>>hull (contours.size());
+   std::vector<std::vector<cv::Point>> hull(contours.size());
    for (size_t i = 0; i < contours.size(); ++i)
    {
         cv::convexHull(contours[i], hull[i]);
@@ -123,11 +123,12 @@ void demo_ConvexHull::applyParameters(int, void* data)
 
    findContours(my_canny, my_contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
-   std::vector<std::vector<cv::Point>> myhull(my_contours.size());
-   for (size_t i = 0; i < contours.size(); ++i) {
-       void* p = (void*)&(contours[i][0]);
-       size_t sz = contours[i].size();
-       void* p1 = new char[sz * sizeof(vx_coordinates2d_t)];
+   std::vector<std::vector<cv::Point>> myhull;
+   myhull.reserve(my_contours.size());
+   for (size_t i = 0; i < my_contours.size(); ++i) {
+       void* p = (void*)&(my_contours[i][0]);
+       size_t sz = my_contours[i].size();
+       void* p1=new vx_coordinates2d_t[sz];
        _vx_array src{
            p,
            sz,
@@ -136,7 +137,7 @@ void demo_ConvexHull::applyParameters(int, void* data)
        vx_array res = ref_ConvexHull(&src,p1);
        cv::Point* beg = (cv::Point*)(res->data);
        std::vector<cv::Point> res_vec(beg, beg + res->size);
-       myhull[i]=res_vec;
+       myhull.push_back(std::move(res_vec));
        delete[] p1;
    }
   /* std::cout << "myhuul size: " << myhull[0].size() << '\n';
