@@ -3,7 +3,7 @@
 
 Реализован алгоритм поиска выпуклой оболочки
 ![image](https://user-images.githubusercontent.com/52796964/162397668-0b23cc1b-5a5a-4bec-a3d2-787fa6f0e50d.png)
-![image](https://user-images.githubusercontent.com/52796964/162629330-70f9541b-5827-4dc7-a7f1-32957055020e.png)
+![image](https://user-images.githubusercontent.com/52796964/162629374-3db844ca-8ca5-40c6-8e11-6bcf9d051ebc.png)
 
 
 
