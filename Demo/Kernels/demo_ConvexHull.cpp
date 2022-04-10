@@ -88,9 +88,11 @@ void demo_ConvexHull::applyParameters(int, void* data)
     auto demo = static_cast<demo_ConvexHull*>(data);
     const cv::Size imgSize(demo->m_srcImage.cols, demo->m_srcImage.rows);
 
+
     cv::RNG rng(12345);
+    cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));//One Color for openvx and opencv
     ///@{ OPENCV
- 
+    
     cv::Mat canny_output;
     cv::Canny(demo->m_srcImage, canny_output, demo->m_threshold, demo->m_threshold * 2);
     std::vector<std::vector<cv::Point>> contours;
@@ -102,17 +104,13 @@ void demo_ConvexHull::applyParameters(int, void* data)
    {
         cv::convexHull(contours[i], hull[i]);
    }
-   /*std::cout << "opencv hull size: "<<hull[0].size() << '\n';
-   for (auto&& v : hull[0])
-       std::cout << v.x << " " << v.y << '\n';*/
-   cv::Mat drawing = cv::Mat::zeros(canny_output.size(), CV_8UC3);//result of openCv Convex Hull
+   cv::Mat opencV = cv::Mat::zeros(canny_output.size(), CV_8UC3);//result of openCv Convex Hull
    for (size_t i = 0; i < contours.size(); ++i)
    {
-       cv::Scalar color=cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
-       drawContours(drawing, contours, (int)i, color);
-       drawContours(drawing, hull, (int)i, color);
+       drawContours(opencV, contours, (int)i, color);
+       drawContours(opencV, hull, (int)i, color);
    }
-   imshow(m_openCVWindow, drawing);
+   imshow(m_openCVWindow, opencV);
    
 
 
@@ -140,23 +138,18 @@ void demo_ConvexHull::applyParameters(int, void* data)
        myhull.push_back(std::move(res_vec));
        delete[] p1;
    }
-  /* std::cout << "myhuul size: " << myhull[0].size() << '\n';
-   for (auto&& v : myhull[0])
-       std::cout << v.x << " " << v.y << "\n";*/
 
-  
 
    cv::Mat openvX = cv::Mat::zeros(my_canny.size(), CV_8UC3);//result of my Convex Hull
    for (size_t i = 0; i < my_contours.size(); ++i)
    {
-       cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
        drawContours(openvX, my_contours, (int)i, color);
        drawContours(openvX, myhull, (int)i, color);
    }
    imshow(m_openVXWindow, openvX);
   
     cv::Mat diffImage(imgSize, CV_8UC1);
-    cv::absdiff(openvX,drawing, diffImage);
+    cv::absdiff(openvX, opencV, diffImage);
     cv::imshow(m_diffWindow, diffImage);
 
    
